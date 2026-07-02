@@ -68,12 +68,15 @@ body{font-family:var(--sans);background:var(--void);color:var(--silver);min-heig
 
 /* CONST LIST */
 .cg{display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:0 12px}
-.cc{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:13px}
+.cc{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:10px;display:flex;gap:10px;align-items:center;cursor:pointer;transition:border-color .15s}
+.cc:active{border-color:var(--amber)}
 .cc.f{grid-column:1/-1;background:linear-gradient(135deg,rgba(232,162,61,.09),var(--panel));border-color:#6a5520}
-.cc-badge{display:inline-block;font-family:var(--mono);font-size:9px;color:var(--amber);background:rgba(232,162,61,.1);padding:2px 7px;border-radius:9px;margin-bottom:7px}
-.cc-zh{font-family:var(--zh);font-size:15px;font-weight:700;margin-bottom:1px}
-.cc-en{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--dim)}
-.cc-meta{display:flex;gap:10px;margin-top:7px;font-family:var(--mono);font-size:10px;color:var(--dim)}
+.cc-thumb{border-radius:8px;flex-shrink:0;background:#060c1a;display:block}
+.cc-body{flex:1;min-width:0}
+.cc-badge{display:inline-block;font-family:var(--mono);font-size:9px;color:var(--amber);background:rgba(232,162,61,.1);padding:2px 7px;border-radius:9px;margin-bottom:5px}
+.cc-zh{font-family:var(--zh);font-size:14px;font-weight:700;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cc-en{font-family:var(--serif);font-style:italic;font-size:12px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cc-meta{display:flex;gap:8px;margin-top:5px;font-family:var(--mono);font-size:10px;color:var(--dim)}
 
 /* SKYMAP */
 .map-controls{padding:12px 12px 0}
@@ -507,15 +510,24 @@ function renderTonight(){
   // Constellations
   const vis=visibleCons(LAT);
   document.getElementById('c-count').textContent = '88 中 '+vis.length+' 個';
-  document.getElementById('c-list').innerHTML = vis.map((c,i)=>{
+  const items = vis.map((c,i)=>{
     const f=i===0?' f':'';
     const br=c.m<=1?'★★★':c.m<=2?'★★':'★';
     const hemi=c.h==='north'?'北天':c.h==='south'?'南天':'橫跨';
-    return '<div class="cc'+f+'"><div class="cc-badge">'+hemi+'</div>'+
+    return '<div class="cc'+f+'" onclick="showConstDetail(''+c.en+'')">'+
+      '<canvas class="cc-thumb" id="thumb-'+c.en.replace(/[^a-zA-Z]/g,'')+'" width="80" height="80"></canvas>'+
+      '<div class="cc-body">'+
+      '<div class="cc-badge">'+hemi+'</div>'+
       '<div class="cc-zh">'+c.zh+'</div>'+
       '<div class="cc-en">'+c.en+'</div>'+
-      '<div class="cc-meta"><span>'+br+'</span><span>赤緯 '+(c.dec>0?'+':'')+c.dec+'°</span></div></div>';
-  }).join('');
+      '<div class="cc-meta"><span>'+br+'</span><span>赤緯 '+(c.dec>0?'+':'')+c.dec+'°</span></div>'+
+      '</div></div>';
+  });
+  document.getElementById('c-list').innerHTML = items.join('');
+  // 畫每個星座縮圖
+  requestAnimationFrame(()=>{
+    vis.forEach(c=>drawConstThumb(c));
+  });
 }
 
 // ════════════════════════════════════════════════════════
@@ -577,6 +589,120 @@ function renderSimpleMap(){
   document.getElementById('sm-loc').textContent = LOC_NAME+' ('+LAT.toFixed(2)+'°, '+LON.toFixed(2)+'°)';
   document.getElementById('sm-time').textContent = pad2(NOW.getHours())+':'+pad2(NOW.getMinutes())+' 今晚';
   drawSimpleMap(document.getElementById('sky-canvas'), LAT, LON);
+}
+
+// ════════════════════════════════════════════════════════
+// 星座縮圖繪製
+// ════════════════════════════════════════════════════════
+
+// 每個星座的簡化星點座標（正規化到 0-1 範圍的相對座標）
+// 格式：[x, y, size] + lines: [[from, to], ...]
+const CONST_SHAPES = {
+  'Orion':       {pts:[[.5,.1,3],[.3,.3,2],[.7,.3,2],[.2,.5,2.5],[.8,.5,2.5],[.3,.7,2],[.7,.7,2],[.5,.9,2.5]],lines:[[0,1],[0,2],[1,2],[1,3],[2,4],[3,5],[4,6],[5,7],[6,7]]},
+  'Ursa Major':  {pts:[[.1,.3,2],[.25,.25,2],[.4,.2,2],[.55,.25,2],[.65,.35,2],[.8,.4,2.5],[.95,.35,2]],lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6]]},
+  'Scorpius':    {pts:[[.5,.05,2.5],[.45,.2,2],[.4,.35,2],[.45,.5,3],[.5,.6,2],[.55,.7,2],[.6,.8,2],[.65,.9,2],[.7,.95,2]],lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8]]},
+  'Leo':         {pts:[[.2,.2,2],[.35,.15,2],[.5,.2,2],[.6,.3,2.5],[.5,.4,2],[.35,.5,2],[.7,.6,2],[.8,.65,2.5]],lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,0],[3,6],[6,7]]},
+  'Lyra':        {pts:[[.5,.1,3],[.3,.4,2],[.4,.5,2],[.6,.5,2],[.7,.4,2],[.5,.1,3]],lines:[[0,1],[0,2],[0,3],[0,4],[1,2],[3,4]]},
+  'Cygnus':      {pts:[[.5,.05,3],[.5,.3,2],[.5,.6,2],[.5,.9,2],[.1,.35,2],[.9,.35,2]],lines:[[0,1],[1,2],[2,3],[4,1],[1,5]]},
+  'Cassiopeia':  {pts:[[.1,.5,2],[.28,.2,2],[.5,.5,2],[.72,.2,2],[.9,.5,2]],lines:[[0,1],[1,2],[2,3],[3,4]]},
+  'Gemini':      {pts:[[.2,.1,2.5],[.4,.1,2.5],[.2,.3,2],[.4,.3,2],[.2,.6,2],[.4,.6,2],[.2,.9,2],[.4,.9,2]],lines:[[0,2],[2,4],[4,6],[1,3],[3,5],[5,7],[2,3]]},
+  'Taurus':      {pts:[[.5,.2,3],[.3,.35,2],[.7,.35,2],[.15,.5,2],[.85,.5,2],[.4,.7,2],[.6,.7,2]],lines:[[0,1],[0,2],[1,3],[2,4],[0,5],[0,6]]},
+  'Perseus':     {pts:[[.5,.1,2],[.4,.3,2],[.5,.5,2.5],[.6,.3,2],[.3,.6,2],[.7,.6,2],[.5,.8,2]],lines:[[0,1],[0,3],[1,2],[3,2],[2,4],[2,5],[2,6]]},
+  'Aquila':      {pts:[[.5,.1,3],[.3,.4,2],[.7,.4,2],[.5,.6,2],[.4,.8,2],[.6,.8,2]],lines:[[0,1],[0,2],[1,3],[2,3],[3,4],[3,5]]},
+  'Bootes':      {pts:[[.5,.05,3],[.3,.3,2],[.7,.3,2],[.2,.6,2],[.8,.6,2],[.4,.8,2],[.6,.8,2]],lines:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,6]]},
+  'Virgo':       {pts:[[.5,.1,3],[.3,.3,2],[.7,.3,2],[.2,.5,2],[.8,.5,2],[.4,.8,2],[.6,.8,2]],lines:[[0,1],[0,2],[1,3],[2,4],[0,5],[0,6]]},
+  'Sagittarius': {pts:[[.4,.2,2],[.6,.2,2],[.3,.45,2],[.7,.45,2.5],[.2,.65,2],[.5,.6,2],[.8,.65,2],[.4,.85,2]],lines:[[0,1],[0,2],[1,3],[2,3],[2,4],[3,5],[5,6],[4,7]]},
+  'Ursa Minor':  {pts:[[.5,.05,3],[.55,.25,2],[.6,.45,2],[.75,.6,2],[.6,.75,2],[.4,.75,2],[.3,.55,2]],lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,3]]},
+  'Andromeda':   {pts:[[.2,.2,2.5],[.35,.35,2],[.5,.5,2],[.65,.65,2],[.8,.8,2]],lines:[[0,1],[1,2],[2,3],[3,4]]},
+  'Pegasus':     {pts:[[.1,.1,2],[.9,.1,2],[.9,.9,2],[.1,.9,2]],lines:[[0,1],[1,2],[2,3],[3,0]]},
+  'Draco':       {pts:[[.8,.1,2.5],[.7,.25,2],[.6,.2,2],[.5,.3,2],[.4,.45,2],[.3,.6,2],[.25,.75,2],[.3,.9,2],[.45,.85,2]],lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8]]},
+  'Hercules':    {pts:[[.5,.1,2],[.35,.3,2],[.65,.3,2],[.3,.55,2],[.7,.55,2],[.2,.75,2],[.8,.75,2]],lines:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[3,4]]},
+  'Crux':        {pts:[[.5,.05,2.5],[.5,.95,2],[.05,.5,2],[.95,.5,2]],lines:[[0,1],[2,3]]},
+  'Centaurus':   {pts:[[.2,.2,3],[.4,.35,2],[.6,.35,2],[.8,.2,2],[.5,.6,2],[.3,.8,2],[.7,.8,2]],lines:[[0,1],[1,2],[2,3],[1,4],[2,4],[4,5],[4,6]]},
+  'Canis Major': {pts:[[.5,.05,3],[.3,.3,2],[.7,.3,2],[.4,.55,2],[.6,.55,2],[.5,.8,2]],lines:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,5]]},
+  'Cancer':      {pts:[[.3,.3,2],[.7,.3,2],[.5,.5,2],[.3,.7,2],[.7,.7,2]],lines:[[0,2],[1,2],[2,3],[2,4]]},
+  'Libra':       {pts:[[.5,.1,2],[.2,.4,2],[.8,.4,2],[.3,.7,2],[.7,.7,2],[.5,.95,2]],lines:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,5]]},
+  'Aquarius':    {pts:[[.5,.1,2],[.3,.3,2],[.7,.3,2],[.2,.55,2],[.8,.55,2],[.4,.8,2],[.6,.8,2]],lines:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6]]},
+  'Capricornus': {pts:[[.1,.3,2],[.3,.2,2],[.6,.15,2],[.9,.3,2],[.8,.55,2],[.6,.7,2],[.3,.65,2],[.15,.5,2]],lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,0]]},
+  'Pisces':      {pts:[[.2,.3,2],[.4,.2,2],[.6,.2,2],[.8,.3,2],[.7,.5,2],[.5,.6,2],[.3,.5,2],[.5,.4,2]],lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,0],[2,7],[7,5]]},
+  'Aries':       {pts:[[.2,.3,2.5],[.4,.2,2],[.6,.3,2],[.8,.45,2]],lines:[[0,1],[1,2],[2,3]]},
+  'Ophiuchus':   {pts:[[.5,.05,2],[.25,.3,2],[.75,.3,2],[.2,.6,2],[.8,.6,2],[.35,.85,2],[.65,.85,2]],lines:[[0,1],[0,2],[1,3],[2,4],[3,5],[4,6],[5,6]]},
+  'Corona Borealis':{pts:[[.2,.5,2],[.35,.25,2],[.5,.15,2.5],[.65,.25,2],[.8,.5,2]],lines:[[0,1],[1,2],[2,3],[3,4]]},
+  'Cetus':       {pts:[[.2,.2,2],[.4,.15,2],[.6,.2,2],[.8,.35,2],[.7,.55,2],[.5,.65,2],[.3,.55,2],[.15,.4,2]],lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,0]]},
+  'Eridanus':    {pts:[[.5,.05,2],[.6,.2,2],[.7,.4,2],[.6,.6,2],[.4,.7,2],[.3,.85,2],[.5,.95,2.5]],lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6]]},
+  'Hydra':       {pts:[[.1,.4,2.5],[.25,.3,2],[.4,.35,2],[.55,.4,2],[.7,.35,2],[.85,.4,2],[.95,.5,2]],lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6]]},
+};
+
+// 畫單一星座縮圖
+function drawConstThumb(con){
+  const id='thumb-'+con.en.replace(/[^a-zA-Z]/g,'');
+  const cv=document.getElementById(id);
+  if(!cv) return;
+  const S=cv.width, ctx=cv.getContext('2d'), pad=8;
+  const shape=CONST_SHAPES[con.en];
+
+  ctx.clearRect(0,0,S,S);
+
+  // 深空背景
+  const bg=ctx.createRadialGradient(S/2,S/2,0,S/2,S/2,S/2);
+  bg.addColorStop(0,'#0d1628'); bg.addColorStop(1,'#050810');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,S,S);
+
+  // 隨機背景星點（裝飾用）
+  const seed=con.en.charCodeAt(0)*17+con.en.charCodeAt(1||0)*7;
+  for(let i=0;i<20;i++){
+    const sx=((seed*i*13+7)%97)/97*S;
+    const sy=((seed*i*7+3)%89)/89*S;
+    const ss=Math.random()<0.3?1.2:0.6;
+    ctx.beginPath(); ctx.arc(sx,sy,ss,0,Math.PI*2);
+    ctx.fillStyle='rgba(200,210,240,0.25)'; ctx.fill();
+  }
+
+  if(shape){
+    const w=S-pad*2, h=S-pad*2;
+
+    // 連線
+    ctx.strokeStyle='rgba(91,127,217,0.45)';
+    ctx.lineWidth=1;
+    shape.lines.forEach(([a,b])=>{
+      const p1=shape.pts[a], p2=shape.pts[b];
+      ctx.beginPath();
+      ctx.moveTo(pad+p1[0]*w, pad+p1[1]*h);
+      ctx.lineTo(pad+p2[0]*w, pad+p2[1]*h);
+      ctx.stroke();
+    });
+
+    // 星點
+    shape.pts.forEach(([x,y,s])=>{
+      const px=pad+x*w, py=pad+y*h, r=s*0.7;
+      ctx.beginPath(); ctx.arc(px,py,r,0,Math.PI*2);
+      ctx.fillStyle='rgba(220,228,248,0.9)';
+      if(s>=2.5){ctx.shadowColor='rgba(180,200,255,0.7)';ctx.shadowBlur=5;}
+      ctx.fill(); ctx.shadowBlur=0;
+    });
+  } else {
+    // 沒有預設形狀：用通用點陣顯示
+    for(let i=0;i<6;i++){
+      const ang=i/6*Math.PI*2-(Math.PI/2);
+      const r2=S/2-14;
+      ctx.beginPath();
+      ctx.arc(S/2+r2*Math.cos(ang), S/2+r2*Math.sin(ang), 1.5, 0, Math.PI*2);
+      ctx.fillStyle='rgba(200,215,248,0.7)'; ctx.fill();
+      if(i<5){
+        ctx.beginPath();
+        ctx.moveTo(S/2+r2*Math.cos(ang),S/2+r2*Math.sin(ang));
+        ctx.lineTo(S/2+r2*Math.cos((i+1)/6*Math.PI*2-Math.PI/2),S/2+r2*Math.sin((i+1)/6*Math.PI*2-Math.PI/2));
+        ctx.strokeStyle='rgba(91,127,217,0.3)'; ctx.lineWidth=0.8; ctx.stroke();
+      }
+    }
+  }
+}
+
+// 點擊星座卡片顯示說明（TODO：可擴充）
+function showConstDetail(en){
+  const con=UCONS.find(c=>c.en===en);
+  if(!con) return;
+  // 簡單的觸覺反饋，未來可改成 modal
 }
 
 // ════════════════════════════════════════════════════════
