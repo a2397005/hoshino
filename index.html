@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#060c1a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>星野 Hoshino</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,400&family=Noto+Serif+TC:wght@400;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --void:   #060c1a;
+  --deep:   #0e1528;
+  --panel:  #141e36;
+  --line:   #222e4e;
+  --silver: #dde0ea;
+  --dim:    #8892b0;
+  --amber:  #e8a23d;
+  --blue:   #5b7fd9;
+  --safe:   env(safe-area-inset-bottom, 0px);
+  --serif:  'Cormorant Garamond','Noto Serif TC',serif;
+  --zh:     'Noto Serif TC',serif;
+  --sans:   'Inter',-apple-system,sans-serif;
+  --mono:   'JetBrains Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{font-family:var(--sans);background:var(--void);color:var(--silver);min-height:100vh;padding-bottom:calc(62px + var(--safe));-webkit-font-smoothing:antialiased}
+
+/* TOPBAR */
+.top{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;position:sticky;top:0;z-index:99;background:linear-gradient(180deg,var(--void) 75%,transparent)}
+.brand{display:flex;align-items:baseline;gap:8px}
+.brand-en{font-family:var(--serif);font-style:italic;font-size:22px;color:var(--amber)}
+.brand-zh{font-family:var(--zh);font-size:14px;font-weight:600;letter-spacing:.05em}
+.loc-chip{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:20px;padding:5px 11px;font-family:var(--mono);font-size:11px;color:var(--dim)}
+
+/* VIEWS */
+.view{display:none}.view.active{display:block;animation:fi .25s ease}
+@keyframes fi{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+
+/* SECTION HEAD */
+.sh{display:flex;align-items:baseline;gap:8px;padding:22px 16px 12px}
+.sh h2{font-family:var(--zh);font-size:17px;font-weight:700;letter-spacing:.02em}
+.sh small{font-family:var(--mono);font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em}
+
+/* HERO */
+.hero{text-align:center;padding:6px 16px 26px}
+.hero-eye{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:#6a5520;text-transform:uppercase;margin-bottom:4px}
+.hero-date{font-family:var(--serif);font-size:56px;font-weight:500;line-height:1;color:var(--silver)}
+.hero-sub{font-family:var(--zh);font-size:14px;color:var(--dim);margin-top:5px}
+
+/* MOON CARD */
+.moon-card{margin:0 12px 10px;background:linear-gradient(150deg,var(--panel),var(--deep));border:1px solid var(--line);border-radius:18px;padding:22px 18px;position:relative;overflow:hidden}
+.moon-card::before{content:'';position:absolute;top:-40%;right:-15%;width:200px;height:200px;background:radial-gradient(circle,rgba(232,162,61,.07),transparent 70%);border-radius:50%}
+.moon-row{display:flex;align-items:center;gap:18px;position:relative;z-index:1}
+.moon-name{font-family:var(--zh);font-size:20px;font-weight:700;margin-bottom:3px}
+.moon-illum{font-family:var(--mono);font-size:12px;color:var(--amber);margin-bottom:12px}
+.moon-times{display:flex;gap:20px}
+.mt-lbl{font-family:var(--mono);font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
+.mt-val{font-family:var(--mono);font-size:17px;font-weight:500}
+
+/* STATS */
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:0 12px}
+.sc{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px}
+.sc-lbl{font-family:var(--mono);font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.sc-val{font-family:var(--mono);font-size:22px;font-weight:500;color:var(--amber)}
+
+/* CONST LIST */
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:0 12px}
+.cc{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:13px}
+.cc.f{grid-column:1/-1;background:linear-gradient(135deg,rgba(232,162,61,.09),var(--panel));border-color:#6a5520}
+.cc-badge{display:inline-block;font-family:var(--mono);font-size:9px;color:var(--amber);background:rgba(232,162,61,.1);padding:2px 7px;border-radius:9px;margin-bottom:7px}
+.cc-zh{font-family:var(--zh);font-size:15px;font-weight:700;margin-bottom:1px}
+.cc-en{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--dim)}
+.cc-meta{display:flex;gap:10px;margin-top:7px;font-family:var(--mono);font-size:10px;color:var(--dim)}
+
+/* SKYMAP */
+.map-controls{padding:12px 12px 0}
+.ir{display:flex;gap:8px;margin-bottom:8px}
+.ig{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:8px 12px}
+.ig label{display:block;font-family:var(--mono);font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
+.ig input{width:100%;background:none;border:none;outline:none;color:var(--silver);font-family:var(--mono);font-size:14px;-webkit-appearance:none}
+.loc-btn{width:100%;background:var(--amber);color:var(--void);border:none;border-radius:11px;padding:11px;margin-bottom:12px;font-family:var(--sans);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer}
+.loc-btn:active{opacity:.8}
+.loc-btn svg{width:15px;height:15px}
+
+/* STYLE TABS */
+.style-tabs{display:flex;gap:6px;padding:0 12px 12px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.stab{flex-shrink:0;background:var(--panel);border:1px solid var(--line);color:var(--dim);font-family:var(--sans);font-size:12px;font-weight:500;padding:7px 14px;border-radius:20px;cursor:pointer}
+.stab.active{background:var(--amber);border-color:var(--amber);color:var(--void);font-weight:700}
+
+.map-wrap{margin:0 12px 12px;background:#04070f;border:1px solid var(--line);border-radius:16px;padding:12px;position:relative}
+.map-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-family:var(--mono);font-size:10px;color:var(--dim)}
+#sky-canvas{width:100%;aspect-ratio:1;display:block;border-radius:50%;touch-action:none}
+#isky-canvas{width:100%;aspect-ratio:1;display:block;border-radius:50%;touch-action:none}
+.compass{display:flex;justify-content:space-between;margin-top:6px;padding:0 2px;font-family:var(--mono);font-size:10px;color:var(--dim)}
+
+/* INFO */
+.info{margin:0 12px;background:rgba(91,127,217,.07);border:1px solid rgba(91,127,217,.2);border-radius:11px;padding:12px 13px;font-size:12px;line-height:1.75;color:var(--dim)}
+.info strong{color:var(--blue)}
+
+/* LOADING */
+.ld{text-align:center;padding:36px;color:var(--dim);font-size:13px}
+.sp{width:22px;height:22px;border:2.5px solid var(--line);border-top-color:var(--amber);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* BOTTOM NAV */
+.bnav{position:fixed;bottom:0;left:0;right:0;background:rgba(6,12,26,.93);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);display:flex;padding-bottom:var(--safe);z-index:100;border-top:1px solid var(--line)}
+.nb{flex:1;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 0 8px;color:#455070;font-family:var(--sans);font-size:10px;font-weight:500;transition:color .15s}
+.nb svg{width:21px;height:21px}
+.nb.active{color:var(--amber)}
+.nb:active{opacity:.7}
+
+footer{padding:20px 16px;text-align:center;font-size:11px;color:var(--dim);line-height:1.8}
+footer a{color:var(--dim)}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="brand">
+    <span class="brand-en">Hoshino</span>
+    <span class="brand-zh">星野</span>
+  </div>
+  <div class="loc-chip">
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>
+    <span id="loc-txt">定位中…</span>
+  </div>
+</div>
+
+<main>
+
+<!-- ══ 今夜 ══ -->
+<div class="view active" id="view-tonight">
+  <div class="hero">
+    <div class="hero-eye">TONIGHT'S SKY</div>
+    <div class="hero-date" id="h-date">--/--</div>
+    <div class="hero-sub" id="h-sub"></div>
+  </div>
+
+  <div class="sh"><h2>☾ 月相</h2><small>MOON</small></div>
+  <div class="moon-card">
+    <div class="moon-row">
+      <canvas id="moon-cv" width="84" height="84" style="flex-shrink:0"></canvas>
+      <div style="flex:1;min-width:0">
+        <div class="moon-name" id="m-name">—</div>
+        <div class="moon-illum" id="m-illum"></div>
+        <div class="moon-times">
+          <div><div class="mt-lbl">月出</div><div class="mt-val" id="m-rise">—</div></div>
+          <div><div class="mt-lbl">月沒</div><div class="mt-val" id="m-set">—</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sg" style="margin-top:9px">
+    <div class="sc"><div class="sc-lbl">月齡</div><div class="sc-val" id="m-age">—</div></div>
+    <div class="sc"><div class="sc-lbl">下次滿月</div><div class="sc-val" id="m-full" style="font-size:15px">—</div></div>
+  </div>
+
+  <div class="sh" style="margin-top:6px"><h2>✦ 今晚可見星座</h2><small id="c-count">—</small></div>
+  <p style="font-size:11px;color:var(--dim);padding:0 16px 12px;line-height:1.7">依今晚 21:00、你目前的緯度概略估算</p>
+  <div class="cg" id="c-list"><div class="ld" style="grid-column:1/-1"><div class="sp"></div>計算中…</div></div>
+  <div class="info" style="margin-top:12px"><strong>提醒</strong> 實際可見度受光害、地平線與天氣影響，越靠近天頂越容易觀察。</div>
+</div>
+
+<!-- ══ 概略星圖 ══ -->
+<div class="view" id="view-skymap">
+  <div class="sh" style="padding-top:18px"><h2>⊕ 今夜概略星圖</h2><small>SKY MAP</small></div>
+  <div class="map-controls">
+    <div class="ir">
+      <div class="ig"><label>緯度 LAT</label><input id="lat1" type="number" placeholder="25.04" step="0.01"></div>
+      <div class="ig"><label>經度 LON</label><input id="lon1" type="number" placeholder="121.56" step="0.01"></div>
+    </div>
+    <button class="loc-btn" onclick="geolocate(1)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>
+      使用目前位置
+    </button>
+  </div>
+  <div class="map-wrap">
+    <div class="map-meta"><span id="sm-loc">—</span><span id="sm-time">—</span></div>
+    <canvas id="sky-canvas"></canvas>
+    <div class="compass"><span>西 W</span><span>南 S（天頂）</span><span>東 E</span></div>
+  </div>
+  <div class="info">概略版星圖，依緯度與月份顯示今晚可見星座分佈。星點大小代表亮度，名稱為較亮的星座。</div>
+</div>
+
+<!-- ══ 互動星圖 ══ -->
+<div class="view" id="view-inter">
+  <div class="sh" style="padding-top:18px"><h2>✧ 互動星圖</h2><small>INTERACTIVE · 可拖曳縮放</small></div>
+  <div class="map-controls">
+    <div class="ir">
+      <div class="ig"><label>緯度 LAT</label><input id="lat2" type="number" placeholder="25.04" step="0.01"></div>
+      <div class="ig"><label>經度 LON</label><input id="lon2" type="number" placeholder="121.56" step="0.01"></div>
+    </div>
+    <button class="loc-btn" onclick="geolocate(2)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>
+      使用目前位置
+    </button>
+  </div>
+  <div class="style-tabs">
+    <button class="stab active" onclick="setMapStyle('dark',this)">深空</button>
+    <button class="stab" onclick="setMapStyle('navy',this)">深藍</button>
+    <button class="stab" onclick="setMapStyle('red',this)">暗紅（護眼）</button>
+    <button class="stab" onclick="setMapStyle('light',this)">白底（列印）</button>
+  </div>
+  <div class="map-wrap">
+    <div class="map-meta">
+      <span id="im-loc">—</span>
+      <span id="im-hint" style="color:var(--amber);font-size:10px">拖曳旋轉 · 捏合縮放</span>
+    </div>
+    <canvas id="isky-canvas"></canvas>
+    <div class="compass"><span>西 W</span><span>北 N（天頂）</span><span>東 E</span></div>
+  </div>
+  <div class="info"><strong>互動操作</strong> 單指拖曳旋轉視角 · 雙指縮放 · 點擊星座查看名稱<br>依你的座標與今晚時間即時計算星座高度角與方位角</div>
+</div>
+
+</main>
+
+<footer>星空計算採天文簡化公式，僅供觀星參考<br><a href="https://github.com">GitHub</a></footer>
+
+<nav class="bnav">
+  <button class="nb active" onclick="sv('tonight',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.5A8.5 8.5 0 1 1 11.5 4a7 7 0 0 0 9.5 8.5z"/></svg>今夜
+  </button>
+  <button class="nb" onclick="sv('skymap',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18z"/></svg>概略圖
+  </button>
+  <button class="nb" onclick="sv('inter',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>互動星圖
+  </button>
+</nav>
+
+<script>
+'use strict';
+
+// ════════════════════════════════════════════════════════
+// 全域狀態
+// ════════════════════════════════════════════════════════
+let LAT = 25.04, LON = 121.56, LOC_NAME = '台北';
+const NOW = new Date();
+let MAP_STYLE = 'dark';
+// 互動星圖拖曳狀態
+let iDrag = false, iLastX = 0, iLastY = 0;
+let iRotX = 30, iRotY = 0, iScale = 1;
+let iPinchDist = 0;
+
+// ════════════════════════════════════════════════════════
+// 工具
+// ════════════════════════════════════════════════════════
+const pad2 = n => String(n).padStart(2,'0');
+const WD = ['日','一','二','三','四','五','六'];
+const CN = ['〇','一','二','三','四','五','六','七','八','九'];
+const D2R = Math.PI/180, R2D = 180/Math.PI;
+
+function jd(d){ return d.getTime()/86400000 + 2440587.5; }
+
+// ════════════════════════════════════════════════════════
+// 月相
+// ════════════════════════════════════════════════════════
+function moonPhase(d){
+  let p = ((jd(d)-2451549.759)%29.53058867)/29.53058867;
+  return p < 0 ? p+1 : p;
+}
+function moonInfo(d){
+  const p = moonPhase(d);
+  const age = p*29.53058867;
+  const illum = (1-Math.cos(p*2*Math.PI))/2;
+  const names = [
+    [0.033,'新月'],[0.216,'眉月（漸盈）'],[0.284,'上弦月'],
+    [0.466,'盈凸月'],[0.534,'滿月'],[0.716,'虧凸月'],
+    [0.784,'下弦月'],[0.967,'殘月（漸虧）'],[1,'新月']
+  ];
+  const name = names.find(n=>p<n[0])[1];
+  return {p,age,illum,name};
+}
+function moonRiseSet(d){
+  const p = moonPhase(d);
+  const lag = p*24.84;
+  const fmt = h => {
+    let hh=Math.floor((6+lag)%24), mm=Math.round(((6+lag)%1)*60);
+    if(h==='set') { hh=Math.floor((18+lag)%24); mm=Math.round(((18+lag)%1)*60); }
+    if(mm===60){mm=0;hh=(hh+1)%24;}
+    return pad2(hh)+':'+pad2(mm);
+  };
+  return {rise:fmt('rise'),set:fmt('set')};
+}
+function nextFullMoon(d){
+  // Start from tomorrow to avoid returning today if near full
+  let t=new Date(d);
+  t.setDate(t.getDate()+1);
+  let lastP=moonPhase(t);
+  for(let i=0;i<35;i++){
+    t.setDate(t.getDate()+1);
+    const p=moonPhase(t);
+    // full moon = phase crossing 0.5 (ascending)
+    if(lastP<0.5&&p>=0.5) return t;
+    // also catch if we're already past 0.5 and wrapping back to new
+    lastP=p;
+  }
+  return null;
+}
+
+// ════════════════════════════════════════════════════════
+// 畫月相
+// ════════════════════════════════════════════════════════
+function drawMoon(cv, p){
+  /*
+   * 月相繪製原理：
+   * - 新月(p=0): 全暗
+   * - 上弦(p=0.25): 右半亮
+   * - 滿月(p=0.5): 全亮
+   * - 下弦(p=0.75): 左半亮
+   *
+   * 方法：用 Path2D 組合兩個半圓
+   *   亮面 = 亮半球（左或右半圓）+ terminator 橢圓（凸向或凹向）
+   */
+  const ctx=cv.getContext('2d'), W=cv.width, r=W/2-3, cx=W/2, cy=W/2;
+  ctx.clearRect(0,0,W,W);
+
+  // 深空背景
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
+  ctx.fillStyle='#0d1628';ctx.fill();
+
+  ctx.save();
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.clip();
+
+  // 月面漸層
+  const g=ctx.createRadialGradient(cx-r*.25,cy-r*.3,r*.05,cx,cy,r*1.05);
+  g.addColorStop(0,'#F5EED8');
+  g.addColorStop(0.6,'#D8CFB0');
+  g.addColorStop(1,'#B0A888');
+
+  const wax = p < 0.5; // 漸盈 or 漸虧
+  // terminator 橢圓的 x 半徑：
+  //   p=0   → rx=r (全暗，terminator 在亮半球側，遮住整個亮面)
+  //   p=0.25→ rx=0 (正好半圓)
+  //   p=0.5 → rx=r (全亮)
+  //   p=0.75→ rx=0 (正好半圓)
+  const angle = p * 2 * Math.PI; // 0→2π
+  // cos(angle): p=0→1, p=0.25→0, p=0.5→-1, p=0.75→0
+  const termRx = Math.abs(r * Math.cos(angle));
+
+  // 1. 先畫整個亮半球（右半圓漸盈，左半圓漸虧）
+  ctx.beginPath();
+  if(wax){
+    // 右半圓亮（上弦前）
+    ctx.arc(cx, cy, r, -Math.PI/2, Math.PI/2, false);
+  } else {
+    // 左半圓亮（下弦後）
+    ctx.arc(cx, cy, r, Math.PI/2, -Math.PI/2, false);
+  }
+  ctx.closePath();
+  ctx.fillStyle = g;
+  ctx.fill();
+
+  // 2. 用 terminator 橢圓蓋掉或補上
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, Math.max(0.5, termRx), r, 0, 0, Math.PI*2);
+  if(wax){
+    // 漸盈：p<0.25 terminator 在右側（暗色蓋住部分亮面）
+    //       p>0.25 terminator 往左縮（亮色補左側）
+    ctx.fillStyle = p < 0.25 ? '#0d1628' : g;
+  } else {
+    // 漸虧：p<0.75 terminator 往右縮（亮色補右側）
+    //       p>0.75 terminator 在左側（暗色蓋住部分亮面）
+    ctx.fillStyle = p < 0.75 ? g : '#0d1628';
+  }
+  ctx.fill();
+
+  ctx.restore();
+
+  // 邊框
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
+  ctx.strokeStyle='rgba(255,255,255,.1)';ctx.lineWidth=1;ctx.stroke();
+}
+
+// ════════════════════════════════════════════════════════
+// 88 星座資料
+// ════════════════════════════════════════════════════════
+const CONS = [
+  {zh:'獵戶座',en:'Orion',s:[12,1,2],h:'both',m:1,dec:5},
+  {zh:'大犬座',en:'Canis Major',s:[12,1,2],h:'both',m:1,dec:-20},
+  {zh:'金牛座',en:'Taurus',s:[11,12,1],h:'both',m:1,dec:15},
+  {zh:'天琴座',en:'Lyra',s:[7,8,9],h:'both',m:1,dec:35},
+  {zh:'天蠍座',en:'Scorpius',s:[6,7,8],h:'south',m:1,dec:-30},
+  {zh:'獅子座',en:'Leo',s:[3,4,5],h:'both',m:1,dec:15},
+  {zh:'牧夫座',en:'Bootes',s:[5,6,7],h:'both',m:1,dec:30},
+  {zh:'南十字座',en:'Crux',s:[3,4,5],h:'south',m:1,dec:-60},
+  {zh:'半人馬座',en:'Centaurus',s:[4,5,6],h:'south',m:1,dec:-50},
+  {zh:'船底座',en:'Carina',s:[1,2,3],h:'south',m:1,dec:-60},
+  {zh:'小犬座',en:'Canis Minor',s:[12,1,2],h:'both',m:2,dec:5},
+  {zh:'雙子座',en:'Gemini',s:[12,1,2],h:'both',m:2,dec:25},
+  {zh:'御夫座',en:'Auriga',s:[12,1,2],h:'north',m:2,dec:40},
+  {zh:'大熊座',en:'Ursa Major',s:[3,4,5],h:'north',m:2,dec:55},
+  {zh:'仙后座',en:'Cassiopeia',s:[10,11,12],h:'north',m:2,dec:60},
+  {zh:'天鵝座',en:'Cygnus',s:[7,8,9],h:'both',m:2,dec:40},
+  {zh:'天鷹座',en:'Aquila',s:[7,8,9],h:'both',m:2,dec:5},
+  {zh:'射手座',en:'Sagittarius',s:[7,8,9],h:'south',m:2,dec:-25},
+  {zh:'室女座',en:'Virgo',s:[4,5,6],h:'both',m:2,dec:0},
+  {zh:'仙女座',en:'Andromeda',s:[10,11,12],h:'north',m:2,dec:40},
+  {zh:'飛馬座',en:'Pegasus',s:[9,10,11],h:'north',m:2,dec:20},
+  {zh:'英仙座',en:'Perseus',s:[11,12,1],h:'north',m:2,dec:45},
+  {zh:'天龍座',en:'Draco',s:[5,6,7,8],h:'north',m:3,dec:65},
+  {zh:'武仙座',en:'Hercules',s:[6,7,8],h:'both',m:3,dec:30},
+  {zh:'蛇夫座',en:'Ophiuchus',s:[6,7,8],h:'both',m:2,dec:0},
+  {zh:'小熊座',en:'Ursa Minor',s:[1,2,3,4,5,6,7,8,9,10,11,12],h:'north',m:3,dec:75},
+  {zh:'巨蟹座',en:'Cancer',s:[2,3,4],h:'both',m:4,dec:20},
+  {zh:'天秤座',en:'Libra',s:[6,7,8],h:'south',m:3,dec:-15},
+  {zh:'白羊座',en:'Aries',s:[11,12,1],h:'north',m:3,dec:20},
+  {zh:'雙魚座',en:'Pisces',s:[10,11,12],h:'north',m:4,dec:10},
+  {zh:'水瓶座',en:'Aquarius',s:[9,10,11],h:'south',m:3,dec:-10},
+  {zh:'摩羯座',en:'Capricornus',s:[8,9,10],h:'south',m:3,dec:-20},
+  {zh:'天壇座',en:'Ara',s:[6,7,8],h:'south',m:3,dec:-55},
+  {zh:'船帆座',en:'Vela',s:[2,3,4],h:'south',m:2,dec:-50},
+  {zh:'天鴿座',en:'Columba',s:[12,1,2],h:'south',m:3,dec:-35},
+  {zh:'波江座',en:'Eridanus',s:[11,12,1],h:'both',m:3,dec:-20},
+  {zh:'鯨魚座',en:'Cetus',s:[10,11,12],h:'both',m:3,dec:-10},
+  {zh:'天兔座',en:'Lepus',s:[12,1,2],h:'south',m:3,dec:-20},
+  {zh:'麒麟座',en:'Monoceros',s:[12,1,2],h:'both',m:4,dec:0},
+  {zh:'長蛇座',en:'Hydra',s:[3,4,5],h:'both',m:3,dec:-15},
+  {zh:'烏鴉座',en:'Corvus',s:[4,5,6],h:'both',m:3,dec:-18},
+  {zh:'巨爵座',en:'Crater',s:[4,5,6],h:'both',m:4,dec:-15},
+  {zh:'天箭座',en:'Sagitta',s:[7,8,9],h:'both',m:4,dec:18},
+  {zh:'海豚座',en:'Delphinus',s:[7,8,9],h:'both',m:3,dec:12},
+  {zh:'小馬座',en:'Equuleus',s:[8,9,10],h:'north',m:4,dec:8},
+  {zh:'狐狸座',en:'Vulpecula',s:[7,8,9],h:'north',m:4,dec:24},
+  {zh:'蝎虎座',en:'Lacerta',s:[9,10,11],h:'north',m:4,dec:45},
+  {zh:'三角座',en:'Triangulum',s:[10,11,12],h:'north',m:3,dec:32},
+  {zh:'豺狼座',en:'Lupus',s:[5,6,7],h:'south',m:2,dec:-40},
+  {zh:'南冕座',en:'Corona Australis',s:[7,8],h:'south',m:4,dec:-40},
+  {zh:'北冕座',en:'Corona Borealis',s:[6,7],h:'both',m:2,dec:30},
+  {zh:'盾牌座',en:'Scutum',s:[7,8],h:'south',m:4,dec:-10},
+  {zh:'孔雀座',en:'Pavo',s:[8,9],h:'south',m:2,dec:-65},
+  {zh:'印第安座',en:'Indus',s:[8,9],h:'south',m:3,dec:-55},
+  {zh:'杜鵑座',en:'Tucana',s:[10,11],h:'south',m:3,dec:-65},
+  {zh:'鳳凰座',en:'Phoenix',s:[10,11],h:'south',m:3,dec:-48},
+  {zh:'天鶴座',en:'Grus',s:[9,10],h:'south',m:2,dec:-46},
+  {zh:'南魚座',en:'Piscis Austrinus',s:[9,10],h:'south',m:2,dec:-30},
+  {zh:'顯微鏡座',en:'Microscopium',s:[8,9],h:'south',m:5,dec:-36},
+  {zh:'望遠鏡座',en:'Telescopium',s:[7,8],h:'south',m:4,dec:-52},
+  {zh:'矩尺座',en:'Norma',s:[6,7],h:'south',m:4,dec:-52},
+  {zh:'圓規座',en:'Circinus',s:[5,6],h:'south',m:4,dec:-63},
+  {zh:'南三角座',en:'Triangulum Australe',s:[5,6],h:'south',m:2,dec:-65},
+  {zh:'蒼蠅座',en:'Musca',s:[3,4],h:'south',m:3,dec:-70},
+  {zh:'蝘蜓座',en:'Chamaeleon',s:[2,3],h:'south',m:4,dec:-79},
+  {zh:'飛魚座',en:'Volans',s:[1,2],h:'south',m:4,dec:-70},
+  {zh:'劍魚座',en:'Dorado',s:[12,1],h:'south',m:3,dec:-60},
+  {zh:'網罟座',en:'Reticulum',s:[11,12],h:'south',m:4,dec:-60},
+  {zh:'時鐘座',en:'Horologium',s:[11,12],h:'south',m:5,dec:-52},
+  {zh:'天爐座',en:'Fornax',s:[11,12],h:'south',m:4,dec:-30},
+  {zh:'玉夫座',en:'Sculptor',s:[10,11],h:'south',m:4,dec:-30},
+  {zh:'南極座',en:'Octans',s:[1,2,3,4,5,6,7,8,9,10,11,12],h:'south',m:5,dec:-85},
+  {zh:'唧筒座',en:'Antlia',s:[3,4],h:'south',m:4,dec:-32},
+  {zh:'羅盤座',en:'Pyxis',s:[2,3],h:'south',m:4,dec:-28},
+  {zh:'天貓座',en:'Lynx',s:[1,2,3],h:'north',m:4,dec:48},
+  {zh:'小獅座',en:'Leo Minor',s:[3,4],h:'north',m:4,dec:35},
+  {zh:'后髮座',en:'Coma Berenices',s:[4,5],h:'north',m:4,dec:23},
+  {zh:'獵犬座',en:'Canes Venatici',s:[4,5],h:'north',m:3,dec:40},
+  {zh:'鹿豹座',en:'Camelopardalis',s:[12,1,2],h:'north',m:5,dec:70},
+  {zh:'六分儀座',en:'Sextans',s:[3,4],h:'both',m:4,dec:0},
+  {zh:'山案座',en:'Mensa',s:[1,2],h:'south',m:5,dec:-78},
+  {zh:'巨蛇座',en:'Serpens',s:[6,7,8],h:'both',m:3,dec:10},
+  {zh:'天燕座',en:'Apus',s:[6,7],h:'south',m:4,dec:-75},
+  {zh:'顯微鏡座',en:'Microscopium',s:[8,9],h:'south',m:5,dec:-36},
+  {zh:'繪架座',en:'Pictor',s:[12,1],h:'south',m:4,dec:-53},
+  {zh:'雕具座',en:'Caelum',s:[12,1],h:'south',m:5,dec:-37},
+  {zh:'鐘擺座',en:'Pendulum',s:[11,12],h:'south',m:5,dec:-57},
+];
+
+// 去重
+const UCONS = Array.from(new Map(CONS.map(c=>[c.en,c])).values());
+
+function visibleCons(lat){
+  const mo = NOW.getMonth()+1;
+  const win = [((mo+10)%12)+1, mo, (mo%12)+1];
+  return UCONS.filter(c=>{
+    if(!c.s.some(s=>win.includes(s))) return false;
+    if(90-Math.abs(lat-c.dec)<0) return false;
+    if(c.h==='north'&&lat<-20) return false;
+    if(c.h==='south'&&lat>55) return false;
+    return true;
+  }).sort((a,b)=>a.m-b.m);
+}
+
+// ════════════════════════════════════════════════════════
+// 今夜頁渲染
+// ════════════════════════════════════════════════════════
+function renderTonight(){
+  // Hero
+  const m=NOW.getMonth()+1, d=NOW.getDate();
+  document.getElementById('h-date').textContent = m+' / '+d;
+  const yr=String(NOW.getFullYear()).split('').map(c=>CN[+c]).join('');
+  document.getElementById('h-sub').textContent = yr+'年 '+m+'月'+d+'日 星期'+WD[NOW.getDay()];
+  // Moon
+  const mi=moonInfo(NOW);
+  document.getElementById('m-name').textContent = mi.name;
+  document.getElementById('m-illum').textContent = '照亮 '+Math.round(mi.illum*100)+'%';
+  document.getElementById('m-age').textContent = mi.age.toFixed(1)+' 天';
+  const rs=moonRiseSet(NOW);
+  document.getElementById('m-rise').textContent = rs.rise;
+  document.getElementById('m-set').textContent = rs.set;
+  const nf=nextFullMoon(NOW);
+  document.getElementById('m-full').textContent = nf?(nf.getMonth()+1)+'/'+nf.getDate():'—';
+  drawMoon(document.getElementById('moon-cv'), mi.p);
+  // Constellations
+  const vis=visibleCons(LAT);
+  document.getElementById('c-count').textContent = '88 中 '+vis.length+' 個';
+  document.getElementById('c-list').innerHTML = vis.map((c,i)=>{
+    const f=i===0?' f':'';
+    const br=c.m<=1?'★★★':c.m<=2?'★★':'★';
+    const hemi=c.h==='north'?'北天':c.h==='south'?'南天':'橫跨';
+    return '<div class="cc'+f+'"><div class="cc-badge">'+hemi+'</div>'+
+      '<div class="cc-zh">'+c.zh+'</div>'+
+      '<div class="cc-en">'+c.en+'</div>'+
+      '<div class="cc-meta"><span>'+br+'</span><span>赤緯 '+(c.dec>0?'+':'')+c.dec+'°</span></div></div>';
+  }).join('');
+}
+
+// ════════════════════════════════════════════════════════
+// 概略星圖
+// ════════════════════════════════════════════════════════
+const PALETTE = {
+  dark:  {bg0:'#040810',bg1:'#0a0e1a',ring:'rgba(232,162,61,.3)',grid:'rgba(255,255,255,.05)',star:'rgba(220,225,240,',lbl:'rgba(180,190,220,.8)'},
+  navy:  {bg0:'#020610',bg1:'#060b20',ring:'rgba(80,130,220,.3)',grid:'rgba(80,130,220,.06)',star:'rgba(200,215,240,',lbl:'rgba(150,180,220,.8)'},
+  red:   {bg0:'#080000',bg1:'#120000',ring:'rgba(200,50,50,.3)',grid:'rgba(200,50,50,.05)',star:'rgba(255,180,180,',lbl:'rgba(220,130,130,.8)'},
+  light: {bg0:'#f0f2f8',bg1:'#e0e4f0',ring:'rgba(80,80,150,.4)',grid:'rgba(80,80,150,.08)',star:'rgba(20,30,80,',lbl:'rgba(40,50,100,.9)'},
+};
+
+function drawSimpleMap(cv, lat, lon){
+  const S=cv.parentElement.clientWidth-24;
+  cv.width=S;cv.height=S;
+  const ctx=cv.getContext('2d'), cx=S/2, cy=S/2, R=S/2-8;
+  const pal=PALETTE[MAP_STYLE]||PALETTE.dark;
+
+  ctx.clearRect(0,0,S,S);
+  const bg=ctx.createRadialGradient(cx,cy,0,cx,cy,R);
+  bg.addColorStop(0,pal.bg0);bg.addColorStop(1,pal.bg1);
+  ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);ctx.fillStyle=bg;ctx.fill();
+  // rings
+  [30,60].forEach(a=>{
+    ctx.beginPath();ctx.arc(cx,cy,R*(1-a/90),0,Math.PI*2);
+    ctx.strokeStyle=pal.grid;ctx.lineWidth=1;ctx.stroke();
+  });
+  ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);
+  ctx.strokeStyle=pal.ring;ctx.lineWidth=1.5;ctx.stroke();
+
+  const vis=visibleCons(lat);
+  vis.slice(0,35).forEach((c,i)=>{
+    const altF=Math.max(0,Math.min(1,1-Math.abs(lat-c.dec)/90));
+    const r=R*(1-altF);
+    const h=c.en.split('').reduce((a,ch)=>a+ch.charCodeAt(0),0);
+    const az=((h*13+i*47)%360)*D2R;
+    const x=cx+r*Math.sin(az), y=cy-r*Math.cos(az);
+    if(r>R) return;
+    const sz=Math.max(1.5,4-c.m*0.5);
+    const op=Math.max(0.3,1-c.m*0.15);
+    ctx.beginPath();ctx.arc(x,y,sz,0,Math.PI*2);
+    ctx.fillStyle=pal.star+op+')';
+    ctx.shadowColor='rgba(232,162,61,.5)';
+    ctx.shadowBlur=c.m<=1?7:2;
+    ctx.fill();ctx.shadowBlur=0;
+    if(c.m<=2&&i<12){
+      ctx.font='10px "Noto Serif TC",serif';
+      ctx.fillStyle=pal.lbl;ctx.textAlign='center';
+      ctx.fillText(c.zh,x,y-sz-4);
+    }
+  });
+  // zenith cross
+  ctx.beginPath();ctx.moveTo(cx-5,cy);ctx.lineTo(cx+5,cy);
+  ctx.moveTo(cx,cy-5);ctx.lineTo(cx,cy+5);
+  ctx.strokeStyle='rgba(232,162,61,.5)';ctx.lineWidth=1;ctx.stroke();
+}
+
+function renderSimpleMap(){
+  document.getElementById('sm-loc').textContent = LOC_NAME+' ('+LAT.toFixed(2)+'°, '+LON.toFixed(2)+'°)';
+  document.getElementById('sm-time').textContent = pad2(NOW.getHours())+':'+pad2(NOW.getMinutes())+' 今晚';
+  drawSimpleMap(document.getElementById('sky-canvas'), LAT, LON);
+}
+
+// ════════════════════════════════════════════════════════
+// 互動星圖：真實 Yale Bright Star Catalogue 9096 顆星
+// ════════════════════════════════════════════════════════
+let BSC_STARS = null; // 載入後快取
+let BSC_LOADING = false;
+
+// 解析 RA "HH:MM:SS.ss" → 度數
+function parseRA(s){
+  const p=s.trim().split(':');
+  return (parseFloat(p[0])+parseFloat(p[1])/60+parseFloat(p[2])/3600)*15;
+}
+// 解析 Dec "+DD:MM:SS.ss" → 度數
+function parseDec(s){
+  const neg=s.trim()[0]==='-';
+  const p=s.trim().replace(/^[+-]/,'').split(':');
+  const v=parseFloat(p[0])+parseFloat(p[1])/60+parseFloat(p[2])/3600;
+  return neg?-v:v;
+}
+
+// 光譜型 → 顏色
+function specColor(spec, style){
+  if(!spec) return null;
+  const t=spec.trim()[0];
+  if(style==='red') return 'rgba(255,160,160,';
+  if(style==='light'){
+    const map={O:'rgba(100,130,255,',B:'rgba(130,160,255,',A:'rgba(180,200,255,',F:'rgba(200,210,200,',G:'rgba(80,80,80,',K:'rgba(60,40,20,',M:'rgba(100,20,10,'};
+    return map[t]||'rgba(80,80,80,';
+  }
+  const map={O:'rgba(155,176,255,',B:'rgba(170,191,255,',A:'rgba(220,230,255,',F:'rgba(255,255,255,',G:'rgba(255,244,200,',K:'rgba(255,200,120,',M:'rgba(255,120,80,'};
+  return map[t]||'rgba(210,220,240,';
+}
+
+// 地方恆星時 LST（度數）
+function lst(lon, date){
+  const jd0 = Math.floor(julianDate(date)-0.5)+0.5;
+  const T = (jd0-2451545)/36525;
+  let gst = 100.4606184+36000.77004*T+0.000387933*T*T;
+  gst = gst%360; if(gst<0) gst+=360;
+  const ut = (date.getUTCHours()+date.getUTCMinutes()/60+date.getUTCSeconds()/3600)*15;
+  return (gst+ut+lon+360)%360;
+}
+// 注意：這裡需要用 julianDate 而不是 jd（名字不同）
+function julianDate(d){ return d.getTime()/86400000+2440587.5; }
+
+// 赤道座標 → 地平座標 (az, alt) 度數
+function eq2hor(ra, dec, lat, LST){
+  const ha = (LST-ra+360)%360;
+  const haR=ha*D2R, decR=dec*D2R, latR=lat*D2R;
+  const sinAlt=Math.sin(decR)*Math.sin(latR)+Math.cos(decR)*Math.cos(latR)*Math.cos(haR);
+  const alt=Math.asin(Math.max(-1,Math.min(1,sinAlt)))*R2D;
+  const cosAz=( Math.sin(decR)-Math.sin(alt*D2R)*Math.sin(latR) ) / (Math.cos(alt*D2R)*Math.cos(latR)+1e-10);
+  let az=Math.acos(Math.max(-1,Math.min(1,cosAz)))*R2D;
+  if(Math.sin(haR)>0) az=360-az;
+  return {az,alt};
+}
+
+// 地平座標 → Canvas 像素（立體投影，天頂在中心）
+function hor2px(az, alt, cx, cy, R, scale){
+  if(alt<-2) return null;
+  const r = R*(1-(alt/90))*scale;
+  if(r>R*1.05) return null;
+  const azR=(az+iRotAz)*D2R;
+  return {
+    x: cx + r*Math.sin(azR),
+    y: cy - r*Math.cos(azR)
+  };
+}
+
+function drawRealStarMap(){
+  const cv=document.getElementById('isky-canvas');
+  const S=Math.min(cv.parentElement.clientWidth-24, 700);
+  cv.width=S; cv.height=S;
+  const ctx=cv.getContext('2d'), cx=S/2, cy=S/2, R=S/2-8;
+  const pal=PALETTE[MAP_STYLE]||PALETTE.dark;
+
+  ctx.clearRect(0,0,S,S);
+
+  // 深空背景漸層
+  const bg=ctx.createRadialGradient(cx,cy*0.5,0,cx,cy,R);
+  bg.addColorStop(0, MAP_STYLE==='light'?'#d8dcee':MAP_STYLE==='red'?'#0d0000':'#081428');
+  bg.addColorStop(1, MAP_STYLE==='light'?'#bcc4e0':MAP_STYLE==='red'?'#050000':'#020810');
+  ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);
+  ctx.fillStyle=bg;ctx.fill();
+
+  ctx.save();
+  ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);ctx.clip();
+
+  const curLST = lst(LON, NOW);
+
+  // ── 銀河帶（近似橢圓環）──────────────────────────────
+  if(MAP_STYLE!=='light'){
+    ctx.save();
+    const mwPoints=[];
+    for(let az=0;az<360;az+=3){
+      // 銀河赤緯用近似公式
+      const gLon=az;
+      const gLat=0;
+      const raG=(192.25+gLon*(Math.cos(62.6*D2R)))*1, decG=27.4;
+      const ra2=(raG+az*0.8)%360, dec2=decG*Math.sin(az*D2R)*0.5;
+      const pos2=eq2hor(ra2,dec2,LAT,curLST);
+      const px2=hor2px(pos2.az,pos2.alt,cx,cy,R,iScale);
+      if(px2) mwPoints.push(px2);
+    }
+    // 畫一個模糊光帶
+    if(mwPoints.length>3){
+      ctx.beginPath();
+      mwPoints.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));
+      ctx.closePath();
+      ctx.strokeStyle='rgba(120,140,200,.06)';
+      ctx.lineWidth=R*0.35;ctx.stroke();
+      ctx.strokeStyle='rgba(150,165,220,.04)';
+      ctx.lineWidth=R*0.2;ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // ── 地平線圈 & 高度圈 ────────────────────────────────
+  [0,30,60].forEach(alt=>{
+    const r=R*(1-alt/90)*iScale;
+    if(r>R||r<0) return;
+    ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
+    ctx.strokeStyle=alt===0?pal.ring:pal.grid;
+    ctx.lineWidth=alt===0?1.5:0.6;ctx.stroke();
+  });
+
+  // ── 方位線 ───────────────────────────────────────────
+  [0,45,90,135,180,225,270,315].forEach(az=>{
+    const azR=(az+iRotAz)*D2R;
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.lineTo(cx+R*Math.sin(azR),cy-R*Math.cos(azR));
+    ctx.strokeStyle=pal.grid;ctx.lineWidth=0.4;ctx.stroke();
+  });
+
+  // ── 真實星星 ─────────────────────────────────────────
+  if(BSC_STARS && BSC_STARS.length>0){
+    // 只畫亮星（依縮放倍率決定截止星等）
+    const magLimit = 4 + iScale*1.5;
+    const toProcess = BSC_STARS.filter(s=>s.mag<=magLimit);
+
+    toProcess.forEach(star=>{
+      const hor=eq2hor(star.ra, star.dec, LAT, curLST);
+      if(hor.alt < -3) return;
+      const px=hor2px(hor.az, hor.alt, cx, cy, R, iScale);
+      if(!px) return;
+
+      // 星點大小：依星等計算（越亮越大）
+      const sz = Math.max(0.4, (5.5-star.mag)*0.55*Math.min(iScale,2));
+      const op = Math.min(1, Math.max(0.15, (6-star.mag)/6));
+      const col = specColor(star.spec, MAP_STYLE)||(pal.star);
+
+      ctx.beginPath();
+      ctx.arc(px.x, px.y, sz, 0, Math.PI*2);
+      ctx.fillStyle = col+op+')';
+      // 亮星加光暈
+      if(star.mag<1.5){
+        ctx.shadowColor = col+'0.5)';
+        ctx.shadowBlur = sz*4;
+      }
+      ctx.fill();
+      ctx.shadowBlur=0;
+    });
+
+    // ── 星座連線（主要星座，簡化）──────────────────────
+    CONST_LINES.forEach(line=>{
+      const pts=[];
+      line.forEach(hr=>{
+        const star=BSC_MAP[hr];
+        if(!star) return;
+        const hor=eq2hor(star.ra,star.dec,LAT,curLST);
+        if(hor.alt<-3) return;
+        const px=hor2px(hor.az,hor.alt,cx,cy,R,iScale);
+        if(px) pts.push(px);
+      });
+      if(pts.length<2) return;
+      ctx.beginPath();
+      pts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));
+      ctx.strokeStyle=pal.grid.replace('05','10');
+      ctx.lineWidth=0.7*Math.min(iScale,1.5);ctx.stroke();
+    });
+
+    // ── 星座名稱 ─────────────────────────────────────
+    CONS.filter(c=>c.m<=3).forEach(c=>{
+      const seasonMid=c.s[Math.floor(c.s.length/2)];
+      const ra=(((seasonMid-1)/12*360)+180)%360;
+      const hor=eq2hor(ra,c.dec,LAT,curLST);
+      if(hor.alt<5) return;
+      const px=hor2px(hor.az,hor.alt,cx,cy,R,iScale);
+      if(!px) return;
+      ctx.font=`${Math.round(9*Math.min(iScale,1.8))}px "Noto Serif TC",serif`;
+      ctx.fillStyle=pal.lbl;ctx.textAlign='center';
+      ctx.fillText(c.zh,px.x,px.y-8);
+    });
+  } else {
+    // 還在載入中，顯示提示
+    ctx.font='13px Inter,sans-serif';
+    ctx.fillStyle='rgba(160,170,200,.6)';
+    ctx.textAlign='center';
+    ctx.fillText('星表載入中…',cx,cy);
+  }
+
+  ctx.restore();
+
+  // 天頂標記
+  ctx.beginPath();ctx.moveTo(cx-5,cy);ctx.lineTo(cx+5,cy);
+  ctx.moveTo(cx,cy-5);ctx.lineTo(cx,cy+5);
+  ctx.strokeStyle='rgba(232,162,61,.7)';ctx.lineWidth=1.2;ctx.stroke();
+
+  // 方位標籤
+  const dirs=[['北',0],['東',90],['南',180],['西',270]];
+  dirs.forEach(([lbl,az])=>{
+    const azR=(az+iRotAz)*D2R;
+    const x=cx+(R-12)*Math.sin(azR), y=cy-(R-12)*Math.cos(azR);
+    ctx.font='bold 11px Inter,sans-serif';
+    ctx.fillStyle=pal.lbl;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(lbl,x,y);
+  });
+  ctx.textBaseline='alphabetic';
+}
+
+// ── 主要星座的 HR 連線（使用 HR 編號）─────────────────
+// 獵戶座、天蠍座、大熊座、天琴座、天鵝座等主要星座
+const CONST_LINES = [
+  // 獵戶座 Orion
+  [1948,1903,1852,1543,1544,1552,1543,1790,1948,2061,2004,1948],
+  // 大熊座 Ursa Major (北斗七星)
+  [4301,4295,4069,3888,3757,3569,3323],
+  // 天蠍座 Scorpius
+  [6134,6084,6027,5944,5953,6081,6134,6247,6271,6508,6553,6580],
+  // 天琴座 Lyra
+  [7001,7106,7178,7106,7001],
+  // 天鵝座 Cygnus
+  [7924,7949,8006,7949,7796,7949,7681],
+  // 獅子座 Leo
+  [4534,4357,4057,3975,4057,4399,4534,4786,4534],
+  // 仙后座 Cassiopeia
+  [21,168,264,403,542],
+  // 雙子座 Gemini
+  [2990,2777,2650,2777,2891,2990,3105,2990],
+  // 金牛座 Taurus
+  [1457,1409,1346,1409,1165,1409,1411],
+  // 英仙座 Perseus
+  [1220,1203,1135,915,1017,1135,1220,1273,1303],
+  // 天鷹座 Aquila
+  [7525,7557,7602,7557,7377],
+  // 牧夫座 Bootes
+  [5340,5235,5185,5288,5340,5404,5235],
+  // 室女座 Virgo
+  [5056,4932,4826,4932,5107,5056],
+];
+
+// BSC HR→星資料快速查詢表
+let BSC_MAP = {};
+
+// ── 載入真實星表 ──────────────────────────────────────
+async function loadBSC(){
+  if(BSC_STARS || BSC_LOADING) return;
+  BSC_LOADING=true;
+  document.getElementById('im-hint').textContent='載入星表中（1800顆星）…';
+  try{
+    // 從自己的 GitHub Pages 讀取（同源，不需要 CORS）
+    const resp=await fetch('./stars.json');
+    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    const raw=await resp.json();
+    BSC_STARS=raw.map((s,i)=>({
+      hr: i,
+      ra: s.ra,
+      dec: s.dec,
+      mag: s.mag,
+      spec: s.sp||''
+    })).filter(s=>!isNaN(s.ra)&&!isNaN(s.dec)&&!isNaN(s.mag));
+    BSC_STARS.forEach(s=>{ BSC_MAP[s.hr]=s; });
+    document.getElementById('im-hint').textContent='拖曳旋轉 · 捏合縮放';
+    drawRealStarMap();
+  }catch(e){
+    document.getElementById('im-hint').textContent='⚠ 星表載入失敗，請確認網路';
+    BSC_LOADING=false;
+  }
+}
+
+// ── 互動星圖拖曳 ──────────────────────────────────────
+let iRotAz=0; // 方位角旋轉偏移（替換舊的 iRotY）
+
+function setupInteractive(){
+  const cv=document.getElementById('isky-canvas');
+  cv.addEventListener('mousedown',e=>{iDrag=true;iLastX=e.clientX;iLastY=e.clientY;});
+  window.addEventListener('mousemove',e=>{
+    if(!iDrag)return;
+    iRotAz-=(e.clientX-iLastX)*0.3;
+    iLastX=e.clientX;iLastY=e.clientY;
+    drawRealStarMap();
+  });
+  window.addEventListener('mouseup',()=>iDrag=false);
+  cv.addEventListener('touchstart',e=>{
+    e.preventDefault();
+    if(e.touches.length===1){iDrag=true;iLastX=e.touches[0].clientX;iLastY=e.touches[0].clientY;}
+    else if(e.touches.length===2){
+      iPinchDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+    }
+  },{passive:false});
+  cv.addEventListener('touchmove',e=>{
+    e.preventDefault();
+    if(e.touches.length===1&&iDrag){
+      iRotAz-=(e.touches[0].clientX-iLastX)*0.4;
+      iLastX=e.touches[0].clientX;iLastY=e.touches[0].clientY;
+      drawRealStarMap();
+    }else if(e.touches.length===2){
+      const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+      iScale=Math.max(0.4,Math.min(4,iScale*(d/iPinchDist)));
+      iPinchDist=d;
+      drawRealStarMap();
+    }
+  },{passive:false});
+  cv.addEventListener('touchend',()=>{iDrag=false;});
+}
+
+function renderInteractive(){
+  document.getElementById('im-loc').textContent=LOC_NAME+' ('+LAT.toFixed(2)+'°, '+LON.toFixed(2)+'°)';
+  if(!BSC_STARS) loadBSC();
+  else drawRealStarMap();
+}
+
+// ════════════════════════════════════════════════════════
+// 地圖樣式
+// ════════════════════════════════════════════════════════
+function setMapStyle(s, btn){
+  MAP_STYLE=s;
+  document.querySelectorAll('.stab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderInteractive();
+}
+
+// ════════════════════════════════════════════════════════
+// 定位
+// ════════════════════════════════════════════════════════
+function geolocate(which){
+  if(!navigator.geolocation) return;
+  document.getElementById('loc-txt').textContent='定位中…';
+  navigator.geolocation.getCurrentPosition(pos=>{
+    LAT=pos.coords.latitude; LON=pos.coords.longitude; LOC_NAME='目前位置';
+    document.getElementById('loc-txt').textContent=LAT.toFixed(2)+'°, '+LON.toFixed(2)+'°';
+    document.getElementById('lat1').value=LAT.toFixed(2);
+    document.getElementById('lon1').value=LON.toFixed(2);
+    document.getElementById('lat2').value=LAT.toFixed(2);
+    document.getElementById('lon2').value=LON.toFixed(2);
+    renderTonight();
+    renderSimpleMap();
+    renderInteractive();
+  }, ()=>{ document.getElementById('loc-txt').textContent='台北（預設）'; }, {timeout:8000});
+}
+
+['lat1','lon1'].forEach(id=>{
+  document.getElementById(id).addEventListener('change',e=>{
+    const v=parseFloat(e.target.value);
+    if(!isNaN(v)){
+      if(id==='lat1') LAT=v; else LON=v;
+      LOC_NAME='自訂'; renderSimpleMap(); renderTonight();
+    }
+  });
+});
+['lat2','lon2'].forEach(id=>{
+  document.getElementById(id).addEventListener('change',e=>{
+    const v=parseFloat(e.target.value);
+    if(!isNaN(v)){
+      if(id==='lat2') LAT=v; else LON=v;
+      LOC_NAME='自訂'; renderInteractive(); renderTonight();
+    }
+  });
+});
+
+// ════════════════════════════════════════════════════════
+// 導覽
+// ════════════════════════════════════════════════════════
+function sv(id, btn){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  document.getElementById('view-'+id).classList.add('active');
+  btn.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(id==='skymap') setTimeout(renderSimpleMap,50);
+  if(id==='inter')  setTimeout(renderInteractive,50);
+}
+
+window.addEventListener('resize',()=>{
+  if(document.getElementById('view-skymap').classList.contains('active')) renderSimpleMap();
+  if(document.getElementById('view-inter').classList.contains('active')) renderInteractive();
+});
+
+// ════════════════════════════════════════════════════════
+// 啟動
+// ════════════════════════════════════════════════════════
+document.getElementById('lat1').value = LAT;
+document.getElementById('lon1').value = LON;
+document.getElementById('lat2').value = LAT;
+document.getElementById('lon2').value = LON;
+renderTonight();
+setupInteractive();
+geolocate(1);
+</script>
+</body>
+</html>
